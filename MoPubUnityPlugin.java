@@ -1,4 +1,4 @@
-package com.mopub.mobileads;
+package com.mopub;
 
 import android.app.Activity;
 import android.util.DisplayMetrics;
@@ -13,8 +13,9 @@ import com.unity3d.player.UnityPlayer;
 
 import static com.mopub.mobileads.MoPubInterstitial.InterstitialAdListener;
 import static com.mopub.mobileads.MoPubView.BannerAdListener;
+import static com.mopub.nativeads.MoPubNatie.MoPubNativeListener;
 
-public class MoPubUnityPlugin implements BannerAdListener, InterstitialAdListener {
+public class MoPubUnityPlugin implements BannerAdListener, InterstitialAdListener, MoPubNativeListener {
     private static MoPubUnityPlugin sInstance;
 
     // used for testing directly in Eclipse
@@ -23,6 +24,7 @@ public class MoPubUnityPlugin implements BannerAdListener, InterstitialAdListene
     private static String TAG = "MoPub";
     private MoPubInterstitial mMoPubInterstitial;
     private MoPubView mMoPubView;
+    private MoPubNative mMoPubNative;
     private RelativeLayout mLayout;
 
     public static MoPubUnityPlugin instance() {
@@ -126,6 +128,20 @@ public class MoPubUnityPlugin implements BannerAdListener, InterstitialAdListene
     }
 
     /*
+     * Natvie Ads API
+     */
+     public void requestNativeAd(final String adUnitId) {
+        getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                mMoPubNative = new MoPubNative(getActivity(), adUnitId,MoPubUnityPlugin.this);
+                mMoPubInterstitial.makeRequest();
+            }
+        });
+    }
+     
+     
+     
+    /*
      * BannerAdListener implementation
      */
     @Override
@@ -187,7 +203,29 @@ public class MoPubUnityPlugin implements BannerAdListener, InterstitialAdListene
     }
 
 
+     /*
+     * MoPubNativeListener implementation
+     */
+    @Override
+    public void onNativeLoad(NativeResponse nativeResponse) {
+        UnitySendMessage("MoPubAndroidManager", "onNativeLoad", "");
+    }
 
+    @Override
+    public void onNativeFail(NativeErrorCode errorCode) {
+        UnitySendMessage("MoPubAndroidManager", "onNativeFail", "");
+    }
+
+    @Override public void onNativeImpression(View view) {
+        UnitySendMessage("MoPubAndroidManager", "onNativeImpression", "");
+    }
+
+    @Override public void onNativeClick(View view) {
+        UnitySendMessage("MoPubAndroidManager", "onNativeClick", "");
+    }
+
+
+    
     private Activity getActivity() {
         if (mActivity != null)
             return mActivity;
